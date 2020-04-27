@@ -1,15 +1,14 @@
 import { headerFactory } from './utils';
+import settings from './servicesettings.json';
 let callConfigService = async function (accessToken) {
 	const headers = headerFactory(accessToken.accessToken);
 
-	const endpoint = 'https://localhost:44322/api/Setting/';
+	const endpoint = settings.ConfigService.endpoint;
 
 	const options = {
 		method: 'GET',
 		headers: headers,
 	};
-
-	console.log('calling remote config');
 
 	let response = await fetch(endpoint, options);
 
