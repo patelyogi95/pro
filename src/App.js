@@ -6,8 +6,10 @@ import NavBar from './NavBar';
 import ErrorMessage from './ErrorMessage';
 import Welcome from './Welcome';
 import Bearer from './Bearer';
+import Settings from './Settings';
 import config from './Config';
 import { getUserDetails } from './GraphService';
+import { callConfigService } from './ConfigService';
 import 'bootstrap/dist/css/bootstrap.css';
 import './App.css';
 
@@ -33,6 +35,7 @@ class App extends Component {
 			user: {},
 			error: null,
 			accessToken: '',
+			settings: null,
 		};
 
 		if (user) {
@@ -61,9 +64,28 @@ class App extends Component {
 			isAuthenticated: false,
 			user: {},
 			error: error,
+			accessToken: '',
 		});
 
 		return error;
+	}
+
+	async getRemoteConfig() {
+		try {
+			var accessToken = await this.userAgentApplication.acquireTokenSilent({
+				scopes: config.configScopes,
+			});
+
+			console.log(accessToken);
+
+			this.setState({ accessToken: accessToken.accessToken });
+
+			let data = await callConfigService(accessToken);
+
+			this.setState({ settings: data.settings });
+		} catch (err) {
+			this.parseError(err);
+		}
 	}
 
 	render() {
@@ -109,6 +131,10 @@ class App extends Component {
 								/>
 							)}
 						/>
+						<Settings
+							isAuthenticated={this.state.isAuthenticated}
+							settings={this.state.settings}
+						/>
 						<Bearer
 							isAuthenticated={this.state.isAuthenticated}
 							bearerToken={this.state.accessToken}
@@ -132,6 +158,7 @@ class App extends Component {
 				prompt: 'select_account',
 			});
 			await this.getUserProfile();
+			await this.getRemoteConfig();
 		} catch (err) {
 			this.parseError(err);
 		}

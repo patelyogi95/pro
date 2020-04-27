@@ -3,4 +3,5 @@ module.exports = {
 	tenantId: 'c9bf19ef-111a-48b0-9aac-03a6855c9eb1',
 	redirectUri: 'http://localhost:3000',
 	scopes: ['user.read'],
+	configScopes: ['api://d2d5138b-7967-4089-927c-6ad7a4be8315/access_as_user'],
 };
