@@ -9,6 +9,7 @@ import Bearer from './Bearer';
 import config from './Config';
 import { getUserDetails } from './GraphService';
 import 'bootstrap/dist/css/bootstrap.css';
+import './App.css';
 
 class App extends Component {
 	constructor(props) {
@@ -17,6 +18,7 @@ class App extends Component {
 			auth: {
 				clientId: config.appId,
 				redirectUri: config.redirectUri,
+				authority: `https://login.microsoftonline.com/${config.tenantId}/`,
 			},
 			cache: {
 				cacheLocation: 'localStorage',
@@ -24,12 +26,13 @@ class App extends Component {
 			},
 		});
 
-		var user = this.userAgentApplication.getAccount();
+		let user = this.userAgentApplication.getAccount();
 
 		this.state = {
 			isAuthenticated: user !== null,
 			user: {},
 			error: null,
+			accessToken: '',
 		};
 
 		if (user) {
@@ -38,48 +41,42 @@ class App extends Component {
 		}
 	}
 
+	parseError(err) {
+		let error = {};
+		if (typeof err === 'string') {
+			console.log('error is string');
+			let errParts = err.split('|');
+			error =
+				errParts.length > 1
+					? { message: errParts[1], debug: JSON.parse(errParts[0]) }
+					: { message: err };
+		} else {
+			error = {
+				message: err.message,
+				debug: err,
+			};
+		}
+
+		this.setState({
+			isAuthenticated: false,
+			user: {},
+			error: error,
+		});
+
+		return error;
+	}
+
 	render() {
 		let error = null;
+		let errorCode = null;
 		if (this.state.error) {
 			error = (
 				<ErrorMessage
 					message={this.state.error.message}
-					debug={this.state.error.debug}
+					debug={JSON.stringify(this.state.error.debug)}
 				/>
 			);
-			const aadError = JSON.parse(this.state.error.debug);
-			if (aadError.errorCode === 'user_cancelled') {
-				return (
-					<Router>
-						<div>
-							<NavBar
-								isAuthenticated={this.state.isAuthenticated}
-								authButtonMethod={
-									this.state.isAuthenticated
-										? this.logout.bind(this)
-										: this.login.bind(this)
-								}
-								user={this.state.user}
-							/>
-							<Container>
-								{error}
-								<Route
-									exact
-									path='/'
-									render={(props) => (
-										<Welcome
-											{...props}
-											isAuthenticated={this.state.isAuthenticated}
-											user={this.state.user}
-											authButtonMethod={null}
-										/>
-									)}
-								/>
-							</Container>
-						</div>
-					</Router>
-				);
-			}
+			errorCode = this.state.error.debug.errorCode;
 		}
 
 		return (
@@ -104,11 +101,18 @@ class App extends Component {
 									{...props}
 									isAuthenticated={this.state.isAuthenticated}
 									user={this.state.user}
-									authButtonMethod={this.login.bind(this)}
+									authButtonMethod={
+										errorCode === 'user_cancelled'
+											? null
+											: this.login.bind(this)
+									}
 								/>
 							)}
 						/>
-						<Bearer />
+						<Bearer
+							isAuthenticated={this.state.isAuthenticated}
+							bearerToken={this.state.accessToken}
+						/>
 					</Container>
 				</div>
 			</Router>
@@ -129,31 +133,13 @@ class App extends Component {
 			});
 			await this.getUserProfile();
 		} catch (err) {
-			var error = {};
-
-			if (typeof err === 'string') {
-				var errParts = err.split('|');
-				error =
-					errParts.length > 1
-						? { message: errParts[1], debug: errParts[0] }
-						: { message: err };
-			} else {
-				error = {
-					message: err.message,
-					debug: JSON.stringify(err),
-				};
-			}
-
-			this.setState({
-				isAuthenticated: false,
-				user: {},
-				error: error,
-			});
+			this.parseError(err);
 		}
 	}
 
 	logout() {
 		this.userAgentApplication.logout();
+		// TODO: Set logout state to be checked on auto login.
 	}
 
 	async getUserProfile() {
@@ -177,28 +163,11 @@ class App extends Component {
 						email: user.mail || user.userPrincipalName,
 					},
 					error: null,
+					accessToken: accessToken.accessToken,
 				});
 			}
 		} catch (err) {
-			var error = {};
-			if (typeof err === 'string') {
-				var errParts = err.split('|');
-				error =
-					errParts.length > 1
-						? { message: errParts[1], debug: errParts[0] }
-						: { message: err };
-			} else {
-				error = {
-					message: err.message,
-					debug: JSON.stringify(err),
-				};
-			}
-
-			this.setState({
-				isAuthenticated: false,
-				user: {},
-				error: error,
-			});
+			this.parseError(err);
 		}
 	}
 }
