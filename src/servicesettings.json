@@ -1,5 +1,5 @@
 {
 	"ConfigService": {
-		"endpoint": "https://localhost:44322/api/Setting/"
+		"endpoint": "http://flowconfiguration.eastus.azurecontainer.io/api/setting/"
 	}
 }
