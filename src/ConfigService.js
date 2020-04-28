@@ -1,5 +1,6 @@
 import { headerFactory } from './utils';
 import settings from './servicesettings.json';
+
 let callConfigService = async function (accessToken) {
 	const headers = headerFactory(accessToken.accessToken);
 
