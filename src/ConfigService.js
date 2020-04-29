@@ -1,21 +1,23 @@
-import { headerFactory } from './utils';
-import settings from './servicesettings.json';
+import { GetHeaders } from './utils';
+import EndPoints from './Endpoints.json';
 
-let callConfigService = async function (accessToken) {
-	const headers = headerFactory(accessToken.accessToken);
+const GetSettings = async function (accessToken) {
+	const apiResponse = null;
+	const headers = GetHeaders(accessToken.accessToken);
 
-	const endpoint = settings.ConfigService.endpoint;
+	const endpoint = EndPoints.ConfigService.url;
 
 	const options = {
 		method: 'GET',
 		headers: headers,
 	};
 
-	let response = await fetch(endpoint, options);
+	const response = await fetch(endpoint, options);
+	if (response.status === 200) {
+		apiResponse = await response.json();
+	}
 
-	let data = await response.json();
-
-	return data;
+	return apiResponse;
 };
 
-export { callConfigService };
+export { GetSettings };

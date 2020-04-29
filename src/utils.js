@@ -1,10 +1,10 @@
-let headerFactory = function (token) {
-	const header = new Headers();
+const GetHeaders = function (token) {
+	const header = {};
 	const bearer = `Bearer ${token}`;
 
-	header.append('Authorization', bearer);
+	header.Authorization = bearer;
 
 	return header;
 };
 
-export { headerFactory };
+export { GetHeaders };

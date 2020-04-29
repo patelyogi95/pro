@@ -2,6 +2,10 @@ import React from 'react';
 import { Alert } from 'reactstrap';
 
 export default class ErrorMessage extends React.Component {
+	constructor(props) {
+		super(props);
+	}
+
 	render() {
 		let debug = null;
 

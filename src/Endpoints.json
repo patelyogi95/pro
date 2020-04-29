@@ -1,0 +1,5 @@
+{
+	"ConfigService": {
+		"url": "http://flowconfiguration.eastus.azurecontainer.io/api/setting/"
+	}
+}

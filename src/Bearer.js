@@ -1,17 +1,23 @@
 import React from 'react';
 import { Container } from 'reactstrap';
 
-function Bearer(props) {
-	if (props.isAuthenticated) {
-		let message = `Bearer ${props.bearerToken}`;
-		return (
-			<Container className='bearerToken'>
-				<code>{message}</code>
-			</Container>
-		);
+class Bearer extends React.Component {
+	constructor(props) {
+		super(props);
 	}
 
-	return null;
+	render() {
+		if (this.props.isAuthenticated) {
+			const message = `Bearer ${this.props.bearerToken}`;
+			return (
+				<Container className='bearerToken'>
+					<code>{message}</code>
+				</Container>
+			);
+		}
+
+		return null;
+    }
 }
 
-export { Bearer as default };
+export default Bearer;

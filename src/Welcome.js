@@ -14,9 +14,6 @@ function WelcomeContent(props) {
 	if (props.authButtonMethod && props.authButtonMethod !== null)
 		props.authButtonMethod();
 	return null;
-
-	// Not authenticated, present a sign in button
-	// return <Button color="primary" onClick={props.authButtonMethod}>Click here to sign in</Button>;
 }
 
 export default class Welcome extends React.Component {

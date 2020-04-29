@@ -8,9 +8,9 @@ import Welcome from './Welcome';
 import Bearer from './Bearer';
 import Settings from './Settings';
 import config from './Config';
-import { getUserDetails } from './GraphService';
-import { callConfigService } from './ConfigService';
-import 'bootstrap/dist/css/bootstrap.css';
+import GraphService from './GraphService';
+import { GetSettings } from './ConfigService';
+import 'bootstrap/dist/css/bootstrap.css'
 import './App.css';
 
 class App extends Component {
@@ -20,7 +20,7 @@ class App extends Component {
 			auth: {
 				clientId: config.appId,
 				redirectUri: config.redirectUri,
-				authority: `https://login.microsoftonline.com/${config.tenantId}/`,
+				authority: `${config.authority}${config.tenantId}/`,
 			},
 			cache: {
 				cacheLocation: 'localStorage',
@@ -44,7 +44,7 @@ class App extends Component {
 		}
 	}
 
-	parseError(err) {
+	parseError = (err) => {
 		let error = {};
 		if (typeof err === 'string') {
 			console.log('error is string');
@@ -70,23 +70,21 @@ class App extends Component {
 		return error;
 	}
 
-	async getRemoteConfig() {
-		try {
-			var accessToken = await this.userAgentApplication.acquireTokenSilent({
-				scopes: config.configScopes,
-			});
+	//getRemoteConfig = async () => {
+	//	try {
+	//		const accessToken = await this.userAgentApplication.acquireTokenSilent({
+	//			scopes: config.configScopes,
+	//		});
 
-			console.log(accessToken);
+	//		this.setState({ accessToken: accessToken.accessToken });
 
-			this.setState({ accessToken: accessToken.accessToken });
+	//		const data = await GetSettings(accessToken);
 
-			let data = await callConfigService(accessToken);
-
-			this.setState({ settings: data.settings });
-		} catch (err) {
-			this.parseError(err);
-		}
-	}
+	//		this.setState({ settings: data.settings });
+	//	} catch (err) {
+	//		this.parseError(err);
+	//	}
+	//}
 
 	render() {
 		let error = null;
@@ -145,31 +143,31 @@ class App extends Component {
 		);
 	}
 
-	setErrorMessage(message, debug) {
+	setErrorMessage = (message, debug) => {
 		this.setState({
 			error: { message: message, debug: debug },
 		});
 	}
 
-	async login() {
+	login = async () => {
 		try {
 			await this.userAgentApplication.loginPopup({
 				scopes: config.scopes,
 				prompt: 'select_account',
 			});
 			await this.getUserProfile();
-			await this.getRemoteConfig();
+			//await this.getRemoteConfig();
 		} catch (err) {
 			this.parseError(err);
 		}
 	}
 
-	logout() {
+	logout = () => {
 		this.userAgentApplication.logout();
 		// TODO: Set logout state to be checked on auto login.
 	}
 
-	async getUserProfile() {
+	getUserProfile = async () => {
 		try {
 			// Get the access token silently
 			// If the cache contains a non-expired token, this function
@@ -182,7 +180,9 @@ class App extends Component {
 
 			if (accessToken) {
 				// Get the user's profile from Graph
-				var user = await getUserDetails(accessToken);
+				const user = await GraphService.getUserDetails(accessToken);
+				const settings = await GetSettings(accessToken);
+
 				this.setState({
 					isAuthenticated: true,
 					user: {
@@ -191,6 +191,7 @@ class App extends Component {
 					},
 					error: null,
 					accessToken: accessToken.accessToken,
+					settings: settings !== null ? settings.settings : settings,
 				});
 			}
 		} catch (err) {
